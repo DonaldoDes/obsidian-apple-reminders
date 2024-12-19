@@ -1,134 +1,109 @@
-import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
-	mySetting: string;
+declare module "obsidian" {
+  interface Vault {
+    getName(): string;
+  }
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default'
+import { Plugin as ObsidianPlugin, PluginSettingTab, Setting, Notice, Editor, TFile, App } from 'obsidian';
+import { exec } from 'child_process';
+
+interface PluginSettings {
+  listName: string;
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+class ObsidianToAppleReminders extends ObsidianPlugin {
+  settings: PluginSettings;
 
-	async onload() {
-		await this.loadSettings();
+  async onload() {
+    await this.loadSettings();
 
-		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-		// Perform additional things with the ribbon
-		ribbonIconEl.addClass('my-plugin-ribbon-class');
+    this.addSettingTab(new ReminderSettingTab(this.app, this));
 
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status Bar Text');
+    this.addCommand({
+      id: 'send-to-apple-reminders',
+      name: 'Send to Apple Reminders',
+      editorCallback: (editor, view) => this.sendToAppleReminders(editor, view),
+    });
+  }
 
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: 'open-sample-modal-simple',
-			name: 'Open sample modal (simple)',
-			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'sample-editor-command',
-			name: 'Sample editor command',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				console.log(editor.getSelection());
-				editor.replaceSelection('Sample Editor Command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-sample-modal-complex',
-			name: 'Open sample modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
+  async loadSettings() {
+    this.settings = Object.assign({ listName: "Reminders" }, await this.loadData());
+  }
 
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-			}
-		});
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+  sendToAppleReminders(editor: Editor, view: { file: TFile }) {
+    const todoContent = editor.getSelection().trim();
+    if (!todoContent) {
+      new Notice('Please select a to-do item to send as a reminder.');
+      return;
+    }
 
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
+    const noteTitle = view.file.basename;
+    const backlink = `obsidian://open?vault=${encodeURIComponent(this.app.vault.getName())}&file=${encodeURIComponent(view.file.path)}`;
+    const reminderTitle = todoContent;
+    const reminderContent = `Backlink to note: ${backlink}`;
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-	}
+    const listName = this.settings.listName || "Reminders";
 
-	onunload() {
+    const appleScript = `
+      tell application "Reminders"
+        tell list "${listName}"
+          set newReminder to make new reminder with properties {name:"${reminderTitle}", body:"${reminderContent}"}
+          return id of newReminder
+        end tell
+      end tell
+    `;
 
-	}
+    exec(`osascript -e '${appleScript}'`, (error, stdout, stderr) => {
+      if (error) {
+        new Notice(`Error adding reminder: ${stderr}`);
+      } else {
+        const reminderId = stdout.trim();
+        new Notice(`Reminder "${reminderTitle}" added to list "${listName}".`);
+        this.markTodoAsDone(editor, todoContent, reminderId);
+      }
+    });
+  }
 
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
+  markTodoAsDone(editor: Editor, todoContent: string, reminderId: string) {
+    const reminderLink = `x-apple-reminderkit://REMCDReminder/${reminderId}`;
+    const doneTodo = `- [x] ${todoContent} ([Apple Reminder](${reminderLink}))`;
 
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
+    const cursor = editor.getCursor();
+    const line = editor.getLine(cursor.line);
+    const updatedLine = line.replace(`- [ ] ${todoContent}`, doneTodo);
+
+    editor.setLine(cursor.line, updatedLine);
+  }
 }
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
+class ReminderSettingTab extends PluginSettingTab {
+  plugin: ObsidianToAppleReminders;
 
-	onOpen() {
-		const {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
+  constructor(app: App, plugin: ObsidianToAppleReminders) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
 
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
-	}
+  display() {
+    const { containerEl } = this;
+
+    containerEl.empty();
+
+    new Setting(containerEl)
+      .setName('Apple Reminders List')
+      .setDesc('Set the default list for new reminders.')
+      .addText(text => text
+        .setPlaceholder('Enter list name')
+        .setValue(this.plugin.settings.listName || '')
+        .onChange(async (value) => {
+          this.plugin.settings.listName = value;
+          await this.plugin.saveSettings();
+        }));
+  }
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
-
-	constructor(app: App, plugin: MyPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
-
-	display(): void {
-		const {containerEl} = this;
-
-		containerEl.empty();
-
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
-	}
-}
+export default ObsidianToAppleReminders;
