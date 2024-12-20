@@ -1,5 +1,11 @@
 export interface PluginSettings {
   listName: string;
+  showQuickAddButton: boolean;
+  quickAddHotkey: {
+    enabled: boolean;
+    modifiers: string[];
+    key: string;
+  };
 }
 
 export interface Translations {

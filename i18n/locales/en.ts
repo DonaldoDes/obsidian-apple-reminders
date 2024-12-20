@@ -12,7 +12,14 @@ export default {
     }
   },
   commands: {
-    createReminder: "Create reminder"
+    createReminder: "Send todo to Apple Reminders (Ctrl+Enter)"
+  },
+  settings: {
+    hotkeySection: {
+      title: "Keyboard Shortcut",
+      description: "Configure the shortcut to send a todo to Apple Reminders",
+      button: "Modify shortcut"
+    }
   },
   notices: {
     selectTask: "Please select a task to send as a reminder",
@@ -22,6 +29,10 @@ export default {
   },
   errors: {
     addingReminder: "Error adding reminder: {error}",
-    noActiveEditor: "No active editor"
+    noActiveEditor: "No active editor",
+    markingTodo: "Error updating todo: {error}"
+  },
+  buttons: {
+    quickAdd: "Add to Apple Reminders"
   }
 } 

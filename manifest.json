@@ -1,11 +1,10 @@
 {
 	"id": "obsidian-apple-reminders",
-	"name": "Obsidian Apple Reminders",
-	"version": "1.0.1",
+	"name": "Apple Reminders",
+	"version": "1.1.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Donaldo DE SOUSA",
+	"description": "Synchronize your Obsidian todos with Apple Reminders",
+	"author": "Obsidian",
 	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }

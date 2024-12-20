@@ -15,3 +15,84 @@
         transform: rotate(360deg);
     }
 }
+
+.quick-add-reminder {
+  opacity: 0.5;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 14px;
+  vertical-align: middle;
+  transition: opacity 0.2s ease;
+  margin-left: 4px;
+}
+
+.quick-add-reminder:hover {
+  opacity: 1;
+}
+
+.markdown-preview-view .quick-add-reminder {
+  display: inline-block;
+}
+
+.markdown-source-view .quick-add-reminder {
+  margin-left: 4px;
+  display: inline-block;
+}
+
+/* Styles spécifiques pour le mode édition */
+.quick-add-reminder-container {
+  display: inline-block;
+  position: absolute;
+  left: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.cm-line .quick-add-reminder {
+  opacity: 0.5;
+  background: none !important;
+  border: none !important;
+  cursor: pointer !important;
+  padding: 2px !important;
+  font-size: 14px !important;
+  line-height: 1 !important;
+  transition: opacity 0.2s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 1000 !important;
+  pointer-events: all !important;
+  user-select: none !important;
+}
+
+.cm-line .quick-add-reminder:hover {
+  opacity: 1 !important;
+}
+
+/* Ajuster la position en fonction du thème */
+.theme-light .quick-add-reminder-container {
+  background: var(--background-primary);
+}
+
+.theme-dark .quick-add-reminder-container {
+  background: var(--background-primary);
+}
+
+/* Styles pour le modal d'enregistrement de raccourci */
+.hotkey-recorder {
+  text-align: center;
+  padding: 20px;
+  margin: 10px 0;
+  background-color: var(--background-secondary);
+  border-radius: 5px;
+  font-size: 1.2em;
+}
+
+.hotkey-recorder-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}

@@ -12,7 +12,7 @@ export default {
     }
   },
   commands: {
-    createReminder: "Créer un rappel"
+    createReminder: "Envoyer le todo vers Apple Reminders (Ctrl+Enter)"
   },
   notices: {
     selectTask: "Veuillez sélectionner une tâche à envoyer comme rappel",
@@ -22,6 +22,17 @@ export default {
   },
   errors: {
     addingReminder: "Erreur lors de l'ajout du reminder: {error}",
-    noActiveEditor: "Aucun éditeur actif"
+    noActiveEditor: "Aucun éditeur actif",
+    markingTodo: "Erreur lors de la mise à jour du todo: {error}"
+  },
+  buttons: {
+    quickAdd: "Ajouter à Apple Reminders"
+  },
+  settings: {
+    hotkeySection: {
+      title: "Raccourci clavier",
+      description: "Configurez le raccourci pour envoyer un todo vers Apple Reminders",
+      button: "Modifier le raccourci"
+    }
   }
 } 
