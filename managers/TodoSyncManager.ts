@@ -24,7 +24,7 @@ export class TodoSyncManager {
   }
 
   async startPeriodicCheck() {
-    // Attendre que le vault soit prêt
+    // Wait for vault to be ready
     if (this.vault.getFiles().length === 0) {
       this.vault.on('resolve', async () => {
         await this.checkAllTodos();
@@ -41,9 +41,9 @@ export class TodoSyncManager {
   }
 
   private async checkAllTodos() {
-    // Récupérer tous les fichiers du vault
+    // Get all vault files
     const files = this.vault.getFiles();
-    // Filtrer pour ne garder que les fichiers markdown
+    // Filter to keep only markdown files
     const markdownFiles = files.filter(file => file.extension === 'md');
     
     for (const file of markdownFiles) {
@@ -51,8 +51,8 @@ export class TodoSyncManager {
         const content = await this.vault.read(file);
         await this.checkTodosInFile(file, content);
       } catch (error) {
-        // Garder cette erreur pour le debugging en production
-        console.error(`Erreur lors de la lecture du fichier ${file.path}:`, error);
+        // Keep this error for production debugging
+        console.error(`Error reading file ${file.path}:`, error);
       }
     }
   }

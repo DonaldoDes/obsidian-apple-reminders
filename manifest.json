@@ -4,7 +4,7 @@
 	"version": "1.4.0",
 	"minAppVersion": "0.15.0",
 	"description": "Synchronize your Obsidian todos with Apple Reminders",
-	"author": "Obsidian",
+	"author": "Donaldo DE SOUSA",
 	"authorUrl": "https://obsidian.md",
 	"isDesktopOnly": true
 }

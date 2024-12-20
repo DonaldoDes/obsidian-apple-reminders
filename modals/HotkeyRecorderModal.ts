@@ -19,10 +19,10 @@ export class HotkeyRecorderModal extends Modal {
     const { contentEl } = this;
     contentEl.empty();
 
-    contentEl.createEl('h2', { text: 'Enregistrer un nouveau raccourci' });
+    contentEl.createEl('h2', { text: 'Record new hotkey' });
     
     this.recordingDiv = contentEl.createEl('div', {
-      text: 'Appuyez sur une combinaison de touches...',
+      text: 'Press a key combination...',
       cls: 'hotkey-recorder'
     });
 
@@ -31,7 +31,7 @@ export class HotkeyRecorderModal extends Modal {
     });
 
     buttonContainer.createEl('button', {
-      text: 'Annuler',
+      text: 'Cancel',
       cls: 'mod-warning'
     }).addEventListener('click', () => {
       this.close();

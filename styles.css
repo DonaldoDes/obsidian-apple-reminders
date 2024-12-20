@@ -41,7 +41,7 @@
   display: inline-block;
 }
 
-/* Styles spécifiques pour le mode édition */
+/* Specific styles for edit mode */
 .quick-add-reminder-container {
   display: inline-block;
   position: absolute;
@@ -71,7 +71,7 @@
   opacity: 1 !important;
 }
 
-/* Ajuster la position en fonction du thème */
+/* Adjust position based on theme */
 .theme-light .quick-add-reminder-container {
   background: var(--background-primary);
 }
@@ -80,7 +80,7 @@
   background: var(--background-primary);
 }
 
-/* Styles pour le modal d'enregistrement de raccourci */
+/* Styles for hotkey recorder modal */
 .hotkey-recorder {
   text-align: center;
   padding: 20px;
