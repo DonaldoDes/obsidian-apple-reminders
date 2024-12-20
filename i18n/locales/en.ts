@@ -15,10 +15,20 @@ export default {
     createReminder: "Send todo to Apple Reminders (Ctrl+Enter)"
   },
   settings: {
+    listName: {
+      title: "Apple Reminders List",
+      description: "Set the default list for new reminders.",
+      placeholder: "Enter list name"
+    },
+    quickAddButton: {
+      title: "Show quick add button",
+      description: "Display a button next to todos to quickly add them to Apple Reminders"
+    },
     hotkeySection: {
-      title: "Keyboard Shortcut",
-      description: "Configure the shortcut to send a todo to Apple Reminders",
-      button: "Modify shortcut"
+      title: "Keyboard Shortcuts",
+      defaultHotkey: "By default, use Ctrl+Enter to send the todo under your cursor to Apple Reminders.",
+      customizeHotkey: "This shortcut can be modified in Settings > Hotkeys > \"Send current todo to Apple Reminders\"",
+      hotkeyCondition: "Note: The shortcut only works on unsynchronized todos (lines starting with \"- [ ]\" without Apple Reminders link)."
     }
   },
   notices: {

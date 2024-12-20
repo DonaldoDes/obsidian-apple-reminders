@@ -49,7 +49,7 @@ export default class ObsidianToAppleReminders extends Plugin {
     // Commande avec raccourci par défaut
     this.addCommand({
       id: 'quick-add-reminder',
-      name: 'Ajouter le todo courant à Apple Reminders',
+      name: this.i18n.t('commands.createReminder'),
       editorCallback: (editor: Editor) => {
         const cursorLine = editor.getCursor().line;
         const lineContent = editor.getLine(cursorLine);
@@ -372,7 +372,7 @@ export default class ObsidianToAppleReminders extends Plugin {
     if (this.settings.quickAddHotkey.enabled) {
       this.addCommand({
         id: 'quick-add-reminder',
-        name: 'Ajouter le todo courant à Apple Reminders',
+        name: this.i18n.t('commands.createReminder'),
         editorCallback: (editor: Editor) => {
           const cursorLine = editor.getCursor().line;
           const lineContent = editor.getLine(cursorLine);

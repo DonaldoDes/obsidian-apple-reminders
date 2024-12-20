@@ -4,11 +4,13 @@ export class ReminderSettingTab extends PluginSettingTab {
   plugin: Plugin & {
     settings: PluginSettings;
     saveSettings: () => Promise<void>;
+    i18n: any;
   };
 
   constructor(app: App, plugin: Plugin & {
     settings: PluginSettings;
     saveSettings: () => Promise<void>;
+    i18n: any;
   }) {
     super(app, plugin);
     this.plugin = plugin;
@@ -19,10 +21,10 @@ export class ReminderSettingTab extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName('Liste Apple Reminders')
-      .setDesc('Définissez la liste par défaut pour les nouveaux rappels.')
+      .setName(this.plugin.i18n.t('settings.listName.title'))
+      .setDesc(this.plugin.i18n.t('settings.listName.description'))
       .addText(text => text
-        .setPlaceholder('Entrez le nom de la liste')
+        .setPlaceholder(this.plugin.i18n.t('settings.listName.placeholder'))
         .setValue(this.plugin.settings.listName || '')
         .onChange(async (value) => {
           this.plugin.settings.listName = value;
@@ -30,8 +32,8 @@ export class ReminderSettingTab extends PluginSettingTab {
         }));
 
     new Setting(containerEl)
-      .setName('Afficher le bouton d\'ajout rapide')
-      .setDesc('Affiche un bouton à côté des todos pour les ajouter rapidement à Apple Reminders')
+      .setName(this.plugin.i18n.t('settings.quickAddButton.title'))
+      .setDesc(this.plugin.i18n.t('settings.quickAddButton.description'))
       .addToggle(toggle => toggle
         .setValue(this.plugin.settings.showQuickAddButton || false)
         .onChange(async (value) => {
@@ -39,9 +41,8 @@ export class ReminderSettingTab extends PluginSettingTab {
           await this.plugin.saveSettings();
         }));
 
-    // Section des raccourcis clavier
     containerEl.createEl('h3', {
-      text: 'Raccourcis clavier',
+      text: this.plugin.i18n.t('settings.hotkeySection.title'),
       cls: 'setting-item-heading'
     });
 
@@ -50,15 +51,15 @@ export class ReminderSettingTab extends PluginSettingTab {
     });
 
     hotkeyInfo.createEl('p', {
-      text: 'Par défaut, utilisez Ctrl+Enter pour envoyer le todo sur lequel se trouve votre curseur vers Apple Reminders.'
+      text: this.plugin.i18n.t('settings.hotkeySection.defaultHotkey')
     });
 
     hotkeyInfo.createEl('p', {
-      text: 'Ce raccourci peut être modifié dans Paramètres > Raccourcis clavier > "Ajouter le todo courant à Apple Reminders"'
+      text: this.plugin.i18n.t('settings.hotkeySection.customizeHotkey')
     });
 
     hotkeyInfo.createEl('p', {
-      text: 'Note : Le raccourci ne fonctionne que sur les todos non synchronisés (lignes commençant par "- [ ]" sans lien Apple Reminders).'
+      text: this.plugin.i18n.t('settings.hotkeySection.hotkeyCondition')
     });
   }
 } 
