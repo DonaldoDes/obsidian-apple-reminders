@@ -12,16 +12,21 @@ import { ReminderSettingTab } from './settings/ReminderSettingTab';
 import { PluginSettings } from './types';
 import { DueDateModal } from './modals/DueDateModal';
 import { TodoSyncManager } from './managers/TodoSyncManager';
+import { TranslationManager } from './managers/TranslationManager';
+
+export const i18n = new TranslationManager();
 
 export default class ObsidianToAppleReminders extends ObsidianPlugin {
   settings: PluginSettings;
   private todoSyncManager: TodoSyncManager;
+  private i18n: TranslationManager;
 
   async onload() {
+    this.i18n = i18n;
     await this.loadSettings();
     
     setTimeout(async () => {
-      this.todoSyncManager = new TodoSyncManager(this.app, this.app.vault, this.settings);
+      this.todoSyncManager = new TodoSyncManager(this.app, this.app.vault, this.settings, this.i18n);
       await this.todoSyncManager.startPeriodicCheck();
     }, 2000);
 
@@ -52,7 +57,7 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
     const todoContent = editor.getSelection().trim();
     
     if (!todoContent) {
-      new Notice('Veuillez sélectionner une tâche à envoyer comme rappel.');
+      new Notice(this.i18n.t('notices.selectTask'));
       return;
     }
 
@@ -73,9 +78,7 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
       editor.setLine(cursor.line, originalLine);
 
       if (error) {
-        console.error('AppleScript error:', error);
-        console.error('stderr:', stderr);
-        new Notice(`Error adding reminder: ${stderr}`);
+        new Notice(this.i18n.t('errors.addingReminder', { error: stderr }));
       } else {
         const reminderId = stdout.trim();
         const backlink = `obsidian://open?vault=${encodeURIComponent(this.app.vault.getName())}&file=${encodeURIComponent(view.file.path)}`;
@@ -88,7 +91,10 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
           }
         });
 
-        new Notice(`Reminder "${todoContent}" added to list "${listName}".`);
+        new Notice(this.i18n.t('notices.reminderAdded', { 
+          content: todoContent,
+          list: listName 
+        }));
         this.markTodoAsSent(editor, todoContent, reminderId, dueDate);
       }
     });

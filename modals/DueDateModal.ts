@@ -1,5 +1,6 @@
 import { App, Modal } from 'obsidian';
 import { DateFormatter } from '../utils/DateFormatter';
+import { i18n } from '../main';
 
 export class DueDateModal extends Modal {
   result: string | null = null;
@@ -13,7 +14,7 @@ export class DueDateModal extends Modal {
 
   onOpen() {
     const {contentEl} = this;
-    contentEl.createEl("h2", {text: "Définir une date d'échéance (optionnel)"});
+    contentEl.createEl("h2", {text: i18n.t('modals.dueDate.title')});
 
     this.inputEl = contentEl.createEl("input", {
       type: "date",
@@ -32,8 +33,8 @@ export class DueDateModal extends Modal {
     buttonContainer.style.marginTop = "1rem";
 
     const skipButton = buttonContainer.createEl("button", {
-        text: "Créer sans date",
-        cls: "mod-warning"
+      text: i18n.t('modals.dueDate.createWithoutDate'),
+      cls: "mod-warning"
     });
     skipButton.onclick = () => {
       this.close();
@@ -41,8 +42,8 @@ export class DueDateModal extends Modal {
     };
 
     const submitButton = buttonContainer.createEl("button", {
-        text: "Définir la date",
-        cls: "mod-cta"
+      text: i18n.t('modals.dueDate.setDate'),
+      cls: "mod-cta"
     });
     submitButton.onclick = () => {
       this.close();

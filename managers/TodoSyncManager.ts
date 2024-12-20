@@ -1,8 +1,9 @@
-import { TFile, Vault, Events, Notice } from 'obsidian';
+import { TFile, Vault, Notice } from 'obsidian';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { PluginSettings } from '../types';
 import { App } from 'obsidian';
+import { TranslationManager } from './TranslationManager';
 
 const execAsync = promisify(exec);
 
@@ -13,11 +14,13 @@ export class TodoSyncManager {
   private checkInterval: number = 60 * 60 * 1000; // 1 heure en millisecondes
   private readonly REMINDER_URL_REGEX = /\[.*?\]\(x-apple-reminderkit:\/\/REMCDReminder\/([^\/]+)\/details\)/;
   private intervalId: NodeJS.Timeout | null = null;
+  private i18n: TranslationManager;
 
-  constructor(app: App, vault: Vault, settings: PluginSettings) {
+  constructor(app: App, vault: Vault, settings: PluginSettings, i18n: TranslationManager) {
     this.app = app;
     this.vault = vault;
     this.settings = settings;
+    this.i18n = i18n;
   }
 
   async startPeriodicCheck() {
@@ -79,12 +82,12 @@ export class TodoSyncManager {
               const todoContent = line.replace(/\s*\(☑ \[Open\].*\)/, '').trim();
               
               const notice = new Notice(
-                `⚠️ Reminder supprimé: "${todoContent}"`, 
-                10000 // 10 secondes
+                this.i18n.t('notices.reminderDeleted', { content: todoContent }), 
+                10000
               );
               
               notice.noticeEl.createEl('button', {
-                text: '📄 Ouvrir le fichier',
+                text: this.i18n.t('notices.openFile'),
                 cls: 'mod-cta'
               }).onclick = () => {
                 this.app.workspace.openLinkText(file.path, '', false);
