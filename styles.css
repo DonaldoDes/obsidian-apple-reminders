@@ -1,8 +1,17 @@
-/*
+.loader {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--text-muted);
+    border-radius: 50%;
+    border-top-color: var(--text-accent);
+    animation: spin 1s linear infinite;
+    margin-left: 4px;
+    vertical-align: middle;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
