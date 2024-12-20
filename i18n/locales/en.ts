@@ -10,6 +10,9 @@ export default {
       cancel: "Cancel"
     }
   },
+  commands: {
+    createReminder: "Create reminder"
+  },
   notices: {
     selectTask: "Please select a task to send as a reminder",
     reminderAdded: 'Reminder "{content}" added to list "{list}".',
@@ -17,6 +20,7 @@ export default {
     openFile: "📄 Open file"
   },
   errors: {
-    addingReminder: "Error adding reminder: {error}"
+    addingReminder: "Error adding reminder: {error}",
+    noActiveEditor: "No active editor"
   }
 } 

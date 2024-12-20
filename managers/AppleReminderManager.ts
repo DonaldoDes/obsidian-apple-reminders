@@ -1,31 +1,42 @@
 export class AppleReminderManager {
-  static createReminderScript(todoContent: string, noteTitle: string, listName: string, dueDate?: Date) {
-    let appleScript = `
+  static createReminderScript(
+    todoContent: string, 
+    noteTitle: string, 
+    listName: string, 
+    dueDate?: Date
+  ): string {
+    const baseScript = this.getBaseScript(listName);
+    const reminderProperties = this.getReminderProperties(todoContent, noteTitle, dueDate);
+    
+    return `
+      ${baseScript}
+        ${reminderProperties}
+        return id of newReminder
+      end tell
+    end tell`;
+  }
+
+  private static getBaseScript(listName: string): string {
+    return `
       tell application "Reminders"
         tell list "${listName}"`;
-    
+  }
+
+  private static getReminderProperties(
+    todoContent: string, 
+    noteTitle: string, 
+    dueDate?: Date
+  ): string {
     if (dueDate) {
-      const year = dueDate.getFullYear();
-      const month = dueDate.getMonth() + 1;
-      const day = dueDate.getDate();
-      
-      appleScript += `
-          set dueDate to current date
-          set year of dueDate to ${year}
-          set month of dueDate to ${month}
-          set day of dueDate to ${day}
-          set newReminder to make new reminder with properties {name:"${todoContent}", body:"From note: ${noteTitle}", due date:dueDate}`;
-    } else {
-      appleScript += `
-          set newReminder to make new reminder with properties {name:"${todoContent}", body:"From note: ${noteTitle}"}`;
+      return `
+        set dueDate to current date
+        set year of dueDate to ${dueDate.getFullYear()}
+        set month of dueDate to ${dueDate.getMonth() + 1}
+        set day of dueDate to ${dueDate.getDate()}
+        set newReminder to make new reminder with properties {name:"${todoContent}", body:"From note: ${noteTitle}", due date:dueDate}`;
     }
     
-    appleScript += `
-          return id of newReminder
-        end tell
-      end tell`;
-      
-    return appleScript;
+    return `set newReminder to make new reminder with properties {name:"${todoContent}", body:"From note: ${noteTitle}"}`;
   }
 
   static createBacklinkScript(reminderId: string, noteTitle: string, listName: string, backlink: string) {

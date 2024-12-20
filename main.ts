@@ -19,9 +19,11 @@ export const i18n = new TranslationManager();
 export default class ObsidianToAppleReminders extends ObsidianPlugin {
   settings: PluginSettings;
   private todoSyncManager: TodoSyncManager;
+  private i18n: TranslationManager;
 
   async onload() {
     await this.loadSettings();
+    this.i18n = new TranslationManager();
     
     setTimeout(async () => {
       this.todoSyncManager = new TodoSyncManager(this.app, this.app.vault, this.settings, i18n);
@@ -34,6 +36,12 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
       id: 'send-to-apple-reminders',
       name: 'Send to Apple Reminders',
       editorCallback: (editor, view) => this.sendToAppleReminders(editor, view),
+    });
+
+    this.addCommand({
+      id: 'create-reminder',
+      name: this.i18n.t('commands.createReminder'),
+      callback: () => this.handleCreateReminder()
     });
   }
 
@@ -175,6 +183,20 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
     } catch (error) {
       this.removeLoader();
       throw error;
+    }
+  }
+
+  private async handleCreateReminder() {
+    const editor = this.getActiveEditor();
+    if (!editor) {
+      this.showError('errors.noActiveEditor');
+      return;
+    }
+
+    try {
+      await this.createReminder(editor);
+    } catch (error) {
+      this.handleError(error);
     }
   }
 }

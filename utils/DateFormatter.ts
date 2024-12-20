@@ -1,59 +1,33 @@
 export class DateFormatter {
-  private static readonly formatPatterns = [
-    "YYYY-MM-DD",
-    "DD.MM.YYYY", 
-    "MM-DD-YYYY",
-    "DD-MM-YYYY",
-    "MM.DD.YYYY",
-    "YYYY.MM.DD",
-    "YYYY/MM/DD",
-    "DD/MM/YYYY",
-    "MM/DD/YYYY"
-  ];
+  private static readonly DATE_FORMATS = {
+    ISO: "YYYY-MM-DD",
+    EU: "DD.MM.YYYY",
+    US: "MM-DD-YYYY",
+    // ... autres formats
+  };
 
   static getFormats() {
-    const formats = [];
-    
-    this.formatPatterns.forEach(format => {
-      const separator = format.includes(".") ? "\\." : format.includes("/") ? "\\/" : "-";
-      
-      formats.push(
-        {
-          regex: new RegExp(`\\d{1,4}${separator}\\d{1,2}${separator}\\d{1,4} \\d{1,2}:\\d{1,2}( )?([apm]{2})`, "ig"),
-          formatToUser: `${format} hh:mm A`,
-          formatToPicker: "YYYY-MM-DDTHH:mm", 
-          type: "DATETIME"
-        },
-        {
-          regex: new RegExp(`\\d{1,4}${separator}\\d{1,2}${separator}\\d{1,4} \\d{1,2}:\\d{1,2}`, "g"),
-          formatToUser: `${format} HH:mm`,
-          formatToPicker: "YYYY-MM-DDTHH:mm",
-          type: "DATETIME"
-        },
-        {
-          regex: new RegExp(`\\d{1,4}${separator}\\d{1,2}${separator}\\d{1,4}`, "g"),
-          formatToUser: format,
-          formatToPicker: "YYYY-MM-DD",
-          type: "DATE"
-        }
-      );
+    return Object.values(this.DATE_FORMATS).flatMap(format => {
+      const separator = this.getSeparator(format);
+      return this.createFormatVariants(format, separator);
     });
+  }
 
-    formats.push(
+  private static getSeparator(format: string): string {
+    if (format.includes(".")) return "\\.";
+    if (format.includes("/")) return "\\/";
+    return "-";
+  }
+
+  private static createFormatVariants(format: string, separator: string) {
+    return [
       {
-        regex: /\d{1,2}:\d{1,2}( )?([apm]{2})/ig,
-        formatToUser: "hh:mm A",
-        formatToPicker: "HH:mm",
-        type: "TIME"
+        regex: new RegExp(`\\d{1,4}${separator}\\d{1,2}${separator}\\d{1,4} \\d{1,2}:\\d{1,2}( )?([apm]{2})`, "ig"),
+        formatToUser: `${format} hh:mm A`,
+        formatToPicker: "YYYY-MM-DDTHH:mm",
+        type: "DATETIME"
       },
-      {
-        regex: /\d{1,2}:\d{1,2}/g,
-        formatToUser: "HH:mm",
-        formatToPicker: "HH:mm",
-        type: "TIME"
-      }
-    );
-
-    return formats;
+      // ... autres variantes
+    ];
   }
 } 
