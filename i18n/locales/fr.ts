@@ -29,6 +29,10 @@ export default {
       defaultHotkey: "Par défaut, utilisez Ctrl+Enter pour envoyer le todo sur lequel se trouve votre curseur vers Apple Reminders.",
       customizeHotkey: "Ce raccourci peut être modifié dans Paramètres > Raccourcis clavier > \"Ajouter le todo courant à Apple Reminders\"",
       hotkeyCondition: "Note : Le raccourci ne fonctionne que sur les todos non synchronisés (lignes commençant par \"- [ ]\" sans lien Apple Reminders)."
+    },
+    markAsDone: {
+      title: "Marquer comme fait après envoi",
+      description: "Coche automatiquement les todos une fois qu'ils sont envoyés vers Apple Reminders"
     }
   },
   notices: {

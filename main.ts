@@ -4,17 +4,14 @@ declare module "obsidian" {
   }
 }
 
-import { Plugin, MarkdownView, Editor, Notice, EditorView, WidgetType, Platform } from 'obsidian';
+import { Plugin, MarkdownView, Editor, Notice, EditorView, WidgetType, Platform, TFile } from 'obsidian';
 import { exec } from 'child_process';
-import { DateFormatter } from './utils/DateFormatter';
 import { AppleReminderManager } from './managers/AppleReminderManager';
 import { ReminderSettingTab } from './settings/ReminderSettingTab';
 import { PluginSettings } from './types';
 import { DueDateModal } from './modals/DueDateModal';
 import { TodoSyncManager } from './managers/TodoSyncManager';
 import { TranslationManager } from './managers/TranslationManager';
-import { ViewPlugin, DecorationSet, Decoration, ViewUpdate } from '@codemirror/view';
-import { RangeSetBuilder } from '@codemirror/state';
 
 export const i18n = new TranslationManager();
 
@@ -81,7 +78,12 @@ export default class ObsidianToAppleReminders extends Plugin {
     await this.saveData(this.settings);
   }
 
-  async sendToAppleReminders(editor: Editor, view: { file: TFile }) {
+  async sendToAppleReminders(editor: Editor, view: { file: TFile | null }) {
+    if (!view.file) {
+      new Notice(this.i18n.t('errors.noFile'));
+      return;
+    }
+
     const todoContent = editor.getSelection().trim();
     
     if (!todoContent) {
@@ -105,7 +107,7 @@ export default class ObsidianToAppleReminders extends Plugin {
     const noteTitle = view.file.basename;
     const listName = this.settings.listName || "Obsidian Reminders";
     
-    const date = dueDate ? new Date(dueDate) : null;
+    const date = dueDate ? new Date(dueDate) : undefined;
     const appleScript = AppleReminderManager.createReminderScript(todoContent, noteTitle, listName, date);
     
     exec(`osascript -e '${appleScript}'`, (error, stdout, stderr) => {
@@ -166,7 +168,7 @@ export default class ObsidianToAppleReminders extends Plugin {
       }
 
       const view = this.app.workspace.getActiveViewOfType(MarkdownView);
-      if (!view) {
+      if (!view?.file) {
         new Notice(this.i18n.t('errors.noActiveEditor'));
         return;
       }
@@ -180,7 +182,7 @@ export default class ObsidianToAppleReminders extends Plugin {
       const noteTitle = view.file.basename;
       const listName = this.settings.listName || "Obsidian Reminders";
       
-      const date = dueDate ? new Date(dueDate) : null;
+      const date = dueDate ? new Date(dueDate) : undefined;
       const appleScript = AppleReminderManager.createReminderScript(todoContent, noteTitle, listName, date);
       
       exec(`osascript -e '${appleScript}'`, (error, stdout, stderr) => {
@@ -215,8 +217,7 @@ export default class ObsidianToAppleReminders extends Plugin {
 
   async addReminder(todoContent: string, dueDate: string | null = null): Promise<string | null> {
     try {
-      // ... votre code existant ...
-      return reminderId;
+      return null;
     } catch (error) {
       this.removeLoader();
       throw error;
@@ -230,7 +231,7 @@ export default class ObsidianToAppleReminders extends Plugin {
       
       const cleanContent = todoContent.replace(/^- \[ \]/, '').trim();
       
-      let sentTodo = `- [ ]`;
+      let sentTodo = this.settings.markAsDoneAfterSend ? '- [x]' : '- [ ]';
       
       if (dueDate) {
         const formattedDate = dueDate.split('T')[0];
@@ -286,10 +287,9 @@ export default class ObsidianToAppleReminders extends Plugin {
   }
 
   reloadHotkeys() {
-    // Supprimer et recréer la commande avec les nouveaux raccourcis
     this.app.commands.removeCommand(`${this.manifest.id}:quick-add-reminder`);
     
-    if (this.settings.quickAddHotkey.enabled) {
+    if (this.settings.quickAddHotkey?.enabled) {
       this.addCommand({
         id: 'quick-add-reminder',
         name: this.i18n.t('commands.createReminder'),

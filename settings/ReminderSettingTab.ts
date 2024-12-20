@@ -61,5 +61,15 @@ export class ReminderSettingTab extends PluginSettingTab {
     hotkeyInfo.createEl('p', {
       text: this.plugin.i18n.t('settings.hotkeySection.hotkeyCondition')
     });
+
+    new Setting(containerEl)
+      .setName(this.plugin.i18n.t('settings.markAsDone.title'))
+      .setDesc(this.plugin.i18n.t('settings.markAsDone.description'))
+      .addToggle(toggle => toggle
+        .setValue(this.plugin.settings.markAsDoneAfterSend)
+        .onChange(async (value) => {
+          this.plugin.settings.markAsDoneAfterSend = value;
+          await this.plugin.saveSettings();
+        }));
   }
 } 
