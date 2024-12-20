@@ -7,7 +7,8 @@ export default {
       escKey: "ESC: Close window without creating reminder",
       enterKey: "ENTER: Validate selected date or create without date",
       withoutDate: "Create without date",
-      cancel: "Cancel"
+      cancel: "Cancel",
+      chooseDateButton: "Choose a date"
     }
   },
   commands: {
