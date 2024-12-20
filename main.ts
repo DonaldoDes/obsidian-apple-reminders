@@ -18,7 +18,6 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
   private todoSyncManager: TodoSyncManager;
 
   async onload() {
-    console.log('Chargement du plugin ObsidianToAppleReminders');
     await this.loadSettings();
     
     setTimeout(async () => {
