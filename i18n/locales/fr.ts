@@ -1,9 +1,13 @@
 export default {
   modals: {
     dueDate: {
-      title: "Définir une date d'échéance (optionnel)",
-      createWithoutDate: "Créer sans date",
-      setDate: "Définir la date"
+      title: "Ajouter une date d'échéance",
+      helpText: "Choisissez une date pour votre rappel, créez-le sans date d'échéance, ou annulez.",
+      options: "Raccourcis clavier :",
+      escKey: "ESC : Ferme la fenêtre sans créer de reminder",
+      enterKey: "ENTER : Valide la date sélectionnée ou crée sans date",
+      withoutDate: "Créer sans date",
+      cancel: "Annuler"
     }
   },
   notices: {

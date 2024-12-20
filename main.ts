@@ -4,7 +4,7 @@ declare module "obsidian" {
   }
 }
 
-import { Plugin as ObsidianPlugin, Notice, Editor, TFile, App } from 'obsidian';
+import { Plugin as ObsidianPlugin, Notice, Editor, TFile, App, MarkdownView } from 'obsidian';
 import { exec } from 'child_process';
 import { DateFormatter } from './utils/DateFormatter';
 import { AppleReminderManager } from './managers/AppleReminderManager';
@@ -19,14 +19,12 @@ export const i18n = new TranslationManager();
 export default class ObsidianToAppleReminders extends ObsidianPlugin {
   settings: PluginSettings;
   private todoSyncManager: TodoSyncManager;
-  private i18n: TranslationManager;
 
   async onload() {
-    this.i18n = i18n;
     await this.loadSettings();
     
     setTimeout(async () => {
-      this.todoSyncManager = new TodoSyncManager(this.app, this.app.vault, this.settings, this.i18n);
+      this.todoSyncManager = new TodoSyncManager(this.app, this.app.vault, this.settings, i18n);
       await this.todoSyncManager.startPeriodicCheck();
     }, 2000);
 
@@ -57,7 +55,7 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
     const todoContent = editor.getSelection().trim();
     
     if (!todoContent) {
-      new Notice(this.i18n.t('notices.selectTask'));
+      new Notice(i18n.t('notices.selectTask'));
       return;
     }
 
@@ -68,6 +66,12 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
     editor.setLine(cursor.line, line + " ⏳");
 
     const dueDate = await this.getDueDate();
+    
+    if (dueDate === null) {
+      editor.setLine(cursor.line, originalLine);
+      return;
+    }
+
     const noteTitle = view.file.basename;
     const listName = this.settings.listName || "Obsidian Reminders";
     
@@ -78,7 +82,7 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
       editor.setLine(cursor.line, originalLine);
 
       if (error) {
-        new Notice(this.i18n.t('errors.addingReminder', { error: stderr }));
+        new Notice(i18n.t('errors.addingReminder', { error: stderr }));
       } else {
         const reminderId = stdout.trim();
         const backlink = `obsidian://open?vault=${encodeURIComponent(this.app.vault.getName())}&file=${encodeURIComponent(view.file.path)}`;
@@ -91,7 +95,7 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
           }
         });
 
-        new Notice(this.i18n.t('notices.reminderAdded', { 
+        new Notice(i18n.t('notices.reminderAdded', { 
           content: todoContent,
           list: listName 
         }));
@@ -100,34 +104,77 @@ export default class ObsidianToAppleReminders extends ObsidianPlugin {
     });
   }
 
+  private removeLoader() {
+    const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+    if (editor) {
+      const cursor = editor.getCursor();
+      const line = editor.getLine(cursor.line);
+      if (line.includes('⌛')) {
+        const originalLine = line.replace(' ⌛', '');
+        editor.setLine(cursor.line, originalLine);
+      }
+    }
+  }
+
   async getDueDate(): Promise<string | null> {
     return new Promise((resolve) => {
       const modal = new DueDateModal(this.app, (result) => {
+        if (result === null) {
+          this.removeLoader();
+        }
         resolve(result);
       });
       modal.open();
     });
   }
 
-  markTodoAsSent(editor: Editor, todoContent: string, reminderId: string, dueDate: string | null) {
-    const cleanId = reminderId.replace('x-apple-reminder://', '');
-    const reminderLink = `x-apple-reminderkit://REMCDReminder/${cleanId}/details`;
-    
-    let sentTodo = `- [ ] `;
-    
-    // Ajouter la date au début s'il y en a une
-    if (dueDate) {
-        const dailyNoteLink = `[[${dueDate}]]`;
-        sentTodo += `📅 ${dailyNoteLink} `;
+  async onTrigger(editor: Editor, todoContent: string): Promise<void> {
+    try {
+      const dueDate = await this.getDueDate();
+      if (!dueDate) {
+        this.removeLoader();
+        return;
+      }
+      // ... reste du code ...
+    } catch (error) {
+      this.removeLoader();
+      console.error('Error:', error);
+      new Notice(this.i18n.t('errors.addingReminder', { error: error.message }));
     }
-    
-    // Ajouter le contenu du todo et le lien vers Reminders
-    sentTodo += `${todoContent} (☑ [Open](${reminderLink}))`;
+  }
 
-    const cursor = editor.getCursor();
-    const line = editor.getLine(cursor.line);
-    const updatedLine = line.replace(`- [ ] ${todoContent}`, sentTodo);
+  async addReminder(todoContent: string, dueDate: string | null = null): Promise<string | null> {
+    try {
+      // ... votre code existant ...
+      return reminderId;
+    } catch (error) {
+      this.removeLoader();
+      throw error;
+    }
+  }
 
-    editor.setLine(cursor.line, updatedLine);
+  markTodoAsSent(editor: Editor, todoContent: string, reminderId: string, dueDate: string | null) {
+    try {
+      const cleanId = reminderId.replace('x-apple-reminder://', '');
+      const reminderLink = `x-apple-reminderkit://REMCDReminder/${cleanId}/details`;
+      
+      let sentTodo = `- [ ] `;
+      
+      if (dueDate) {
+          const dailyNoteLink = `[[${dueDate}]]`;
+          sentTodo += `📅 ${dailyNoteLink} `;
+      }
+      
+      sentTodo += `${todoContent} (☑ [Open](${reminderLink}))`;
+
+      const cursor = editor.getCursor();
+      const line = editor.getLine(cursor.line);
+      const updatedLine = line.replace(`- [ ] ${todoContent}`, sentTodo);
+
+      editor.setLine(cursor.line, updatedLine);
+    } catch (error) {
+      this.removeLoader();
+      throw error;
+    }
   }
 }

@@ -1,9 +1,13 @@
 export default {
   modals: {
     dueDate: {
-      title: "Set due date (optional)",
-      createWithoutDate: "Create without date",
-      setDate: "Set date"
+      title: "Add due date",
+      helpText: "Choose a date for your reminder, create it without a due date, or cancel.",
+      options: "Keyboard shortcuts:",
+      escKey: "ESC: Close window without creating reminder",
+      enterKey: "ENTER: Validate selected date or create without date",
+      withoutDate: "Create without date",
+      cancel: "Cancel"
     }
   },
   notices: {
