@@ -22,15 +22,12 @@ export default class ObsidianToAppleReminders extends Plugin {
   settings: PluginSettings;
   private todoSyncManager: TodoSyncManager;
   private i18n: TranslationManager;
-  private initialized = false;
-  private keysPressed = new Set<string>();
 
   async onload() {
     console.log("Plugin loading...");
     await this.loadSettings();
     this.i18n = new TranslationManager();
     
-    // Configuration de base
     if (this.settings.showQuickAddButton) {
       this.registerMarkdownPostProcessor(this.addQuickAddButtons.bind(this));
       this.registerEvent(
@@ -40,13 +37,11 @@ export default class ObsidianToAppleReminders extends Plugin {
       );
     }
 
-    // Initialisation du TodoSyncManager
     this.todoSyncManager = new TodoSyncManager(this.app, this.app.vault, this.settings, this.i18n);
     await this.todoSyncManager.startPeriodicCheck();
 
     this.addSettingTab(new ReminderSettingTab(this.app, this));
 
-    // Commande avec raccourci par défaut
     this.addCommand({
       id: 'quick-add-reminder',
       name: this.i18n.t('commands.createReminder'),
@@ -67,71 +62,10 @@ export default class ObsidianToAppleReminders extends Plugin {
         }
       ]
     });
-
-    console.log("Plugin loaded with default hotkey: Ctrl+Enter");
-  }
-
-  private registerHotkey() {
-    if (!this.initialized && this.settings.quickAddHotkey.enabled) {
-      console.log("Registering hotkey");
-      
-      const keydownHandler = (evt: KeyboardEvent) => {
-        console.log("Keydown event:", {
-          key: evt.key,
-          metaKey: evt.metaKey,
-          altKey: evt.altKey,
-          ctrlKey: evt.ctrlKey
-        });
-        
-        const isHotkeyPressed = Platform.isMacOS
-          ? (evt.metaKey && evt.altKey && evt.key === 'Enter')
-          : (evt.ctrlKey && evt.altKey && evt.key === 'Enter');
-
-        if (isHotkeyPressed) {
-          console.log("Hotkey combination detected!");
-          evt.preventDefault();
-          evt.stopPropagation();
-          this.handleQuickAdd();
-        }
-      };
-
-      // Nettoyer les touches pressées quand la fenêtre perd le focus
-      const clearKeys = () => {
-        console.log("Clearing keys state");
-      };
-
-      document.addEventListener('keydown', keydownHandler);
-      window.addEventListener('blur', clearKeys);
-
-      this.register(() => {
-        document.removeEventListener('keydown', keydownHandler);
-        window.removeEventListener('blur', clearKeys);
-      });
-    }
-  }
-
-  private handleQuickAdd() {
-    const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    if (!activeView) {
-      console.log("No active view");
-      return;
-    }
-
-    const editor = activeView.editor;
-    const cursorLine = editor.getCursor().line;
-    const lineContent = editor.getLine(cursorLine);
-    console.log("Current line:", lineContent);
-
-    if (lineContent.match(/^- \[ \]/) && !lineContent.includes('x-apple-reminderkit://')) {
-      this.onTrigger(editor, lineContent);
-    } else {
-      new Notice(this.i18n.t('notices.selectTask'));
-    }
   }
 
   onunload() {
     console.log("Plugin unloading...");
-    this.initialized = false;
   }
 
   async loadSettings() {
@@ -311,20 +245,6 @@ export default class ObsidianToAppleReminders extends Plugin {
     } catch (error) {
       console.error('Error marking todo as sent:', error);
       new Notice(this.i18n.t('errors.markingTodo', { error: error.message }));
-    }
-  }
-
-  private async handleCreateReminder() {
-    const editor = this.getActiveEditor();
-    if (!editor) {
-      this.showError('errors.noActiveEditor');
-      return;
-    }
-
-    try {
-      await this.createReminder(editor);
-    } catch (error) {
-      this.handleError(error);
     }
   }
 
